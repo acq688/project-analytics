@@ -9,14 +9,28 @@ module.exports = {
         }, callback);
     },
 
-    fetchCompletedStoriesForProject: function(projectID, callback) {
+    fetchStories: function(projectID, callback) {
         request({
             url: 'https://api.clubhouse.io/api/beta/stories/search?token=' + TOKEN,
             method: 'POST',
             json: true,
-            body: { archived: false, project_ids: [projectID], workflow_state_types: ['done'] }
+            body: { archived: false, project_ids: [projectID] }
         }, callback);
     },
+
+    // fetchCompletedStoriesForProject: function(projectID, callback) {
+        // var body =  { archived: false,
+                      // project_ids: [projectID],
+                      // workflow_state_types: ['done'] };
+        // return fetchStories(body, callback);
+    // },
+
+    // fetchOpenStoriesForProject: function(projectID, callback) {
+        // var body =  { archived: false,
+                      // project_ids: [projectID],
+                      // workflow_state_types: ['unstarted', 'started'] };
+        // return fetchStories(body, callback);
+    // },
 
     checkForToken: function() {
         if (!TOKEN) {
@@ -31,3 +45,4 @@ function displayNoTokenMessage() {
   console.log('Then run this command:');
   console.log('CLUBHOUSE_API_TOKEN="MYTOKEN"');
 }
+

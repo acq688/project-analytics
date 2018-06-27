@@ -10,23 +10,31 @@ var PROJECT_FILE = PROJECT_DIR + '/projects.js';
 
 
 function fetchAndCompileChartForProject(project, callback) {
-  callback = _.isFunction(callback) ? callback : _.noop;
-  console.log('Fetching completed stories for project "' + project.name + '"...');
+    callback = _.isFunction(callback) ? callback : _.noop;
 
-  calls.fetchCompletedStoriesForProject(project.id, function (err, res, stories) {
-    data_utils.compileChartData(stories, project);
-    callback();
-  });
+    calls.fetchStories(project.id, function (err, res, allStories) {
+        var data = '';
+
+        stories = data_utils.sortStories(allStories);
+
+        data += data_utils.compileCompletedChartData(stories.completed, project);
+        data += data_utils.compileOpenChartData(stories.open, project);
+        data_utils.writeDataToFile(project, data);
+        callback();
+    });
 }
 
 function fetchAndCompileChartsForAllProjects(projects) {
-  var project = projects.shift();
+    // This pops the first thing off of the array
+    var project = projects.shift();
 
-  if (project) {
-    fetchAndCompileChartForProject(project, function () {
-      fetchAndCompileChartsForAllProjects(projects);
-    });
-  }
+
+    // I think this is recursive
+    if (project) {
+        fetchAndCompileChartForProject(project, function () {
+        fetchAndCompileChartsForAllProjects(projects);
+        });
+    }
 }
 
 function findMatchingProjects(projects, query) {

@@ -27,7 +27,7 @@
     ]);
 
     var options = {
-      title: 'Current Story Type Ratio',
+      title: 'Completed Story Type Ratio',
       titleTextStyle: { fontSize: 16 },
       chartArea: chartAreaOptions,
       pieHole: 0.4
@@ -36,48 +36,54 @@
     chart.draw(data, options);
   }
 
-  function renderCurrentStoryByOwnerChart() {
-    var element = document.getElementById('current-story-owner-ratio');
-    var chart = new window.google.visualization.PieChart(element);
-    var mostRecentRatio = window.Data.StoryTypeRatios[window.Data.StoryTypeRatios.length - 1];
-    var data = new window.google.visualization.arrayToDataTable([
-      ['Story Type', 'Current Ratio'],
-      ['Features', mostRecentRatio[1]],
-      ['Bugs', mostRecentRatio[2]],
-      ['Chores', mostRecentRatio[3]]
-    ]);
-
-    var options = {
-      title: 'Current Story Owner Ratio',
-      titleTextStyle: { fontSize: 16 },
-      chartArea: chartAreaOptions,
-      pieHole: 0.4
-    };
-
-    chart.draw(data, options);
-  }
-
-  function renderEstimateRatiosChart() {
-    var element = document.getElementById('estimate-ratios');
+  function renderEstimateRatiosChart(element, title, storyData) {
     var chart = new window.google.visualization.BarChart(element);
     var a = [['Story Estimate', 'Story Count']];
 
-    for (var key in window.Data.EstimateChart) {
-      if (window.Data.EstimateChart.hasOwnProperty(key)) {
-        a.push([key, window.Data.EstimateChart[key]]);
+    for (var key in storyData) {
+      if (storyData.hasOwnProperty(key)) {
+        a.push([key, storyData[key]]);
       }
     }
 
     var data = new window.google.visualization.arrayToDataTable(a);
+    var total = findTotal(a);
 
     var options = {
-      title: 'Story Estimate Distribution',
+      title: title + total,
       titleTextStyle: { fontSize: 16 },
       chartArea: chartAreaOptions,
       legend: 'none'
     };
 
     chart.draw(data, options);
+  }
+
+  function findTotal(data) {
+      data.shift();
+      var sum = 0;
+      for (var key in data) {
+          values = data[key];
+          if (values[0] !== "None") {
+            sum += parseInt(values[0]) * parseInt(values[1]);
+          }
+      }
+      total = " ~~~ Total: " + sum + " Points";
+      return total;
+  }
+
+  function renderCompletedEstimateRatiosChart() {
+    var element = document.getElementById('estimate-ratios');
+    var title = 'Completed Story Estimate Distribution';
+    var storyData = window.Data.EstimateChart;
+    renderEstimateRatiosChart(element, title, storyData);
+  }
+
+  function renderOpenEstimateRatiosChart() {
+    var element = document.getElementById('open-estimate-ratios');
+    var title = 'Open Story Estimate Distribution';
+    var storyData = window.Data.OpenEstimateChart;
+    renderEstimateRatiosChart(element, title, storyData);
   }
 
   function renderStoryTypeRatioChart() {
@@ -246,11 +252,11 @@
     renderLastFetched();
 
     renderCurrentStoryTypeRatioChart();
-    renderCurrentStoryByOwnerChart();
     renderStoryTypeRatioChart();
     renderStoryTypeChart();
     renderMonthlyVelocityChart();
-    renderEstimateRatiosChart();
+    renderCompletedEstimateRatiosChart();
+    renderOpenEstimateRatiosChart();
     renderCycleTimeChart();
   }
 

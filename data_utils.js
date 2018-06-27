@@ -10,8 +10,21 @@ var PROJECT_FILE = PROJECT_DIR + '/projects.js';
 
 module.exports = {
 
-    compileChartData: function(stories, project) {
-        console.log('Compiling story data...');
+    sortStories: function(stories) {
+        result = {'open': [],
+                  'completed': []};
+        _.each(stories, function (story) {
+            if (story.completed) {
+                result.completed.push(story);
+            } else {
+                result.open.push(story);
+            }
+        });
+        return result;
+    },
+
+    compileCompletedChartData: function(stories, project) {
+        console.log('Compiling completed story data...');
         stories = _.sortBy(stories, function (story) {
             return new Date(story.completed_at).getTime();
         });
@@ -25,7 +38,15 @@ module.exports = {
         data += calculateCycleTimeChartData(stories, dateRange);
         data += calculateEstimateChartData(stories);
 
-        fs.writeFileSync(PROJECT_DIR + '/project-' + project.id + '.js', data);
+        return data;
+    },
+
+    compileOpenChartData: function(stories, project) {
+        console.log('Compiling open story data...');
+        var data = '';
+        data += calculateEstimateChartData(stories, true);
+
+        return data;
     },
 
     saveProjectsToFile: function(projects) {
@@ -37,6 +58,10 @@ module.exports = {
             data += 'ClubhouseProjects.push({ id: ' + project.id + ', name: "' + project.name + ' (archived)" });';
         });
         fs.writeFileSync(PROJECT_FILE, data);
+    },
+
+    writeDataToFile: function(project, data) {
+        fs.writeFileSync(PROJECT_DIR + '/project-' + project.id + '.js', data);
     }
 };
 
@@ -80,16 +105,16 @@ function calculateStoryTypeData(stories, dateRange) {
 
     _.each(dateRange, function (day) {
         _.each(stories, function (story) {
-        if (story.completed_at.split('T')[0] === day) {
-            // Measure by story count:
-            totals[story.story_type] += 1;
+            if (story.completed_at.split('T')[0] === day) {
+                // Measure by story count:
+                totals[story.story_type] += 1;
 
-            // Measure by points:
-            // if (story.estimate) {
-            //   totals[story.story_type] += story.estimate;
-            // }
-        }
-        });
+                // Measure by points:
+                // if (story.estimate) {
+                //   totals[story.story_type] += story.estimate;
+                // }
+            }
+            });
         data += '  [new Date("' + day + '"), ' + totals.feature + ', ' + totals.bug + ', ' + totals.chore + '],\n';
     });
 
@@ -118,24 +143,6 @@ function calculateCycleTimeChartData(stories, dateRange) {
     });
 
     data += '];\n';
-
-    return data;
-}
-
-function calculateEstimateChartData(stories) {
-    var estimates = { None: 0 };
-
-    _.each(stories, function (story) {
-        var estimate = _.isNumber(story.estimate) ? story.estimate : 'None';
-
-        if (estimates[estimate]) {
-        estimates[estimate]++;
-        } else {
-        estimates[estimate] = 1;
-        }
-    });
-
-    var data = 'Data.EstimateChart = ' + JSON.stringify(estimates) + ';\n';
 
     return data;
 }
@@ -193,4 +200,24 @@ function storiesToCompletedTimestamps(stories) {
   return _.map(stories, function (story) {
     return new Date(story.completed_at).getTime();
   });
+}
+
+function calculateEstimateChartData(stories, openStories) {
+    var estimates = { None: 0 };
+
+    _.each(stories, function (story) {
+        var estimate = _.isNumber(story.estimate) ? story.estimate : 'None';
+
+        if (estimates[estimate]) {
+        estimates[estimate]++;
+        } else {
+        estimates[estimate] = 1;
+        }
+    });
+
+    if (openStories) {
+        return 'Data.OpenEstimateChart = ' + JSON.stringify(estimates) + ';\n';
+    } else {
+        return 'Data.EstimateChart = ' + JSON.stringify(estimates) + ';\n';
+    }
 }

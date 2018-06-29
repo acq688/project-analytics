@@ -11,6 +11,7 @@ var PROJECT_FILE = PROJECT_DIR + '/projects.js';
 
 function fetchAndCompileChartForProject(project, callback) {
     callback = _.isFunction(callback) ? callback : _.noop;
+    console.log("Fetching data for: " + project.name);
 
     calls.fetchStories(project.id, function (err, res, allStories) {
         var data = '';

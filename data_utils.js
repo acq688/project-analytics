@@ -52,6 +52,9 @@ module.exports = {
 
     compileAllChartData: function(stories, project) {
         var data = '';
+        if (stories.completed.length === 0 || stories.open.length === 0) {
+            return data;
+        }
         var dateRange = calculateDateRangeForStories(stories.completed);
         data += calculateBurndown(stories, dateRange);
 

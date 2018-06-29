@@ -44,6 +44,10 @@ function findMatchingProjects(projects, query) {
     return _.filter(projects, { archived: false });
   }
 
+  if (!query) {
+    return [];
+  }
+
   return _.filter(projects, function (project) {
     return parseInt(query, 10) === project.id || project.name.toLowerCase().indexOf(query.toLowerCase()) === 0;
   });
@@ -63,8 +67,8 @@ function compileProjectData() {
     data_utils.saveProjectsToFile(projects);
 
     var foundProjects = findMatchingProjects(projects, query);
-    if (!query || foundProjects.length === 0) {
-      if (foundProjects.length === 0) {
+    if (foundProjects.length === 0) {
+      if (query && foundProjects.length === 0) {
         console.log('Matching project not found!');
       }
       console.log('You have access to the following projects:\n');

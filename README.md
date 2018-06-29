@@ -23,13 +23,16 @@ Duplicate `.env.example`, rename to `.env`, and paste your token into the `.env`
 ### Usage
 
 ```shell
-# List all of the active (non-archived) projects you have access to
-npm run list
+# List projects that you have access to.
+node fetch.js
 
 # Fetch and compile your data by project. You can use a partial project name.
 # e.g. "AP" will match projects starting with both "API" and "App".
-npm run build <project-name>
+node fetch.js <project-name>
 
 # Fetch and compile data for all active (non-archived) projects
-npm run build-all
+node fetch.js "all"
+
+# Display the data and charts in the browser.
+open index.html
 ```

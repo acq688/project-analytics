@@ -109,6 +109,10 @@ h1 {
   margin: 0 5px 5px 0;
 }
 
+.note {
+  margin: 5px 5px 5px 5px;
+}
+
 #no-chart-found {
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
   display: none;

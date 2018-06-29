@@ -18,20 +18,6 @@ module.exports = {
         }, callback);
     },
 
-    // fetchCompletedStoriesForProject: function(projectID, callback) {
-        // var body =  { archived: false,
-                      // project_ids: [projectID],
-                      // workflow_state_types: ['done'] };
-        // return fetchStories(body, callback);
-    // },
-
-    // fetchOpenStoriesForProject: function(projectID, callback) {
-        // var body =  { archived: false,
-                      // project_ids: [projectID],
-                      // workflow_state_types: ['unstarted', 'started'] };
-        // return fetchStories(body, callback);
-    // },
-
     checkForToken: function() {
         if (!TOKEN) {
             return displayNoTokenMessage();

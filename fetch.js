@@ -19,6 +19,7 @@ function fetchAndCompileChartForProject(project, callback) {
 
         data += data_utils.compileCompletedChartData(stories.completed, project);
         data += data_utils.compileOpenChartData(stories.open, project);
+        data += data_utils.compileAllChartData(stories, project);
         data_utils.writeDataToFile(project, data);
         callback();
     });

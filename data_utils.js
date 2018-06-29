@@ -35,6 +35,7 @@ module.exports = {
         data += calculateStoryTypeData(stories, dateRange);
         data += calculateStoryRatioData(stories, dateRange);
         data += calculateMonthlyVelocityChartData(stories, dateRange);
+        data += calculateMonthlyVelocityChartDataPoints(stories, dateRange);
         data += calculateCycleTimeChartData(stories, dateRange);
         data += calculateEstimateChartData(stories);
 
@@ -49,6 +50,14 @@ module.exports = {
         return data;
     },
 
+    compileAllChartData: function(stories, project) {
+        var data = '';
+        var dateRange = calculateDateRangeForStories(stories.completed);
+        data += calculateBurndown(stories, dateRange);
+
+        return data;
+    },
+
     saveProjectsToFile: function(projects) {
         var data = 'var ClubhouseProjects = [];';
         _.each(_.filter(projects, { archived: false }), function (project) {
@@ -57,6 +66,7 @@ module.exports = {
         _.each(_.filter(projects, { archived: true }), function (project) {
             data += 'ClubhouseProjects.push({ id: ' + project.id + ', name: "' + project.name + ' (archived)" });';
         });
+        // data += 'ClubhouseProjects.push({ id: ' + 'all' + ', name: "' + 'all' + '" });';
         fs.writeFileSync(PROJECT_FILE, data);
     },
 
@@ -156,11 +166,6 @@ function calculateMonthlyVelocityChartData(stories, dateRange) {
         if (story.completed_at.split('T')[0] === day) {
             // Measure by story count:
             velocity += 1;
-
-            // Measure by points:
-            // if (story.estimate) {
-            //   velocity += story.estimate;
-            // }
         }
         });
 
@@ -172,6 +177,79 @@ function calculateMonthlyVelocityChartData(stories, dateRange) {
 
     data += '];\n';
 
+    return data;
+}
+
+function calculateMonthlyVelocityChartDataPoints(stories, dateRange) {
+    var data = 'Data.MonthlyVelocityChartPoints = [\n';
+
+    velocity_data = returnVelocityOverDateRange(stories, dateRange);
+    _.each(velocity_data, function(vd) {
+        data += '  [new Date("' + vd[0] + '"), ' + vd[1] + '],\n';
+    });
+
+    data += '];\n';
+
+    return data;
+}
+
+function returnVelocityOverDateRange(stories, dateRange) {
+    // This is a helper function for Monthly Velocity Chart
+    // and for the burndown
+    stories = _.sortBy(stories, function (story) {
+        return new Date(story.completed_at).getTime();
+    });
+
+    var data = [];
+    var velocity = 0;
+
+    _.each(dateRange, function (day) {
+        _.each(stories, function (story) {
+        if (story.completed_at.split('T')[0] === day) {
+            // Measure by points:
+            if (story.estimate) {
+              velocity += story.estimate;
+            }
+        }
+        });
+
+        if (day.split('-')[2] === '01') {
+            data.push([day, velocity]);
+            velocity = 0;
+        }
+    });
+
+    return data;
+}
+
+function calculateBurndown(stories, dateRange) {
+    var data = 'Data.Burndown = [\n';
+
+    velocity_data = returnVelocityOverDateRange(stories.completed, dateRange);
+
+    var sum = 0;
+    for (var i=0; i < velocity_data.length; i++) {
+        sum += velocity_data[i][1];
+    }
+    average = (sum/velocity_data.length);
+
+    var open_stories = 0;
+    _.each(stories.open, function(story) {
+        open_stories += story.estimate;
+    });
+
+    var last_month = _.last(velocity_data)[0];
+    var this_month = moment(last_month).add(1, 'months');
+
+    while (open_stories > 0) {
+        data += '  [new Date("' + this_month.format(DATE_FORMAT) + '"), ' + open_stories + '],\n';
+
+        this_month = this_month.add(1, 'months');
+        open_stories -= average;
+    }
+    data += '  [new Date("' + this_month.format(DATE_FORMAT) + '"), 0],\n';
+
+    data += '];\n';
     return data;
 }
 

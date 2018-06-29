@@ -135,31 +135,52 @@
     chart.draw(data, options);
   }
 
-  function renderMonthlyVelocityChart() {
-    var element = document.getElementById('monthly-velocity-chart');
-    var chart = new window.google.visualization.ColumnChart(element);
-    var data = new window.google.visualization.DataTable();
+    function renderMonthlyVelocityChartPoints() {
+        var element = document.getElementById('monthly-velocity-chart-points');
+        var title = 'Monthly Velocity by Story Points';
+        var storyData = window.Data.MonthlyVelocityChart;
+        renderVelocityChart(element, title, storyData);
+    }
 
-    data.addColumn('date', 'Date');
-    data.addColumn('number', 'Stories');
-    data.addRows(window.Data.MonthlyVelocityChart.slice(-12));
+    function renderMonthlyVelocityChart() {
+        var element = document.getElementById('monthly-velocity-chart');
+        var title = 'Monthly Velocity by Completed Stories';
+        var storyData = window.Data.MonthlyVelocityChartPoints;
+        renderVelocityChart(element, title, storyData);
+    }
 
-    var options = {
-      title: 'Monthly Velocity, Last 12 Months',
-      titleTextStyle: { fontSize: 16 },
-      focusTarget: 'category',
-      isStacked: true,
-      chartArea: chartAreaOptions,
-      trendlines: {
-        0: {
-          type: 'exponential'
-        }
-      },
-      legend: 'none'
-    };
+    function renderVelocityChart(element, title, storyData) {
 
-    chart.draw(data, options);
-  }
+        var chart = new window.google.visualization.ColumnChart(element);
+        var data = new window.google.visualization.DataTable();
+
+        data.addColumn('date', 'Date');
+        data.addColumn('number', 'Stories');
+        data.addRows(storyData.slice(-12));
+
+        var options = {
+        title: title,
+        titleTextStyle: { fontSize: 16 },
+        focusTarget: 'category',
+        isStacked: true,
+        chartArea: chartAreaOptions,
+        trendlines: {
+            0: {
+            type: 'linear'
+            }
+        },
+        legend: 'none'
+        };
+
+        chart.draw(data, options);
+    }
+
+    function renderBurnDown() {
+        var element = document.getElementById('burndown');
+        var title = 'Burndown by Average Points Per Month';
+        var storyData = window.Data.Burndown;
+        renderVelocityChart(element, title, storyData);
+    }
 
   function renderCycleTimeChart() {
     var element = document.getElementById('cycle-time-chart');
@@ -173,7 +194,7 @@
     data.addRows(window.Data.CycleTimeChart.slice(-12));
 
     var options = {
-      title: 'Project Cycle Time in Days, Last 12 Months',
+      title: 'Project Cycle Time in Days',
       titleTextStyle: { fontSize: 16 },
       focusTarget: 'category',
       chartArea: chartAreaOptions,
@@ -255,9 +276,11 @@
     renderStoryTypeRatioChart();
     renderStoryTypeChart();
     renderMonthlyVelocityChart();
+    renderMonthlyVelocityChartPoints();
     renderCompletedEstimateRatiosChart();
     renderOpenEstimateRatiosChart();
     renderCycleTimeChart();
+    renderBurnDown();
   }
 
   function initGoogleLibrary() {

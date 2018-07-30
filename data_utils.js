@@ -230,6 +230,11 @@ function calculateBurndown(stories, dateRange) {
 
     velocity_data = returnVelocityOverDateRange(stories.completed, dateRange);
 
+    if (velocity_data.length == 0) {
+        data += ']';
+        return data;
+    }
+
     var sum = 0;
     for (var i=0; i < velocity_data.length; i++) {
         sum += velocity_data[i][1];
